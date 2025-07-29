@@ -234,7 +234,8 @@ const Dashboard = () => {
         const headers = ["Name", "Email", "Amount", "Type", "Date"];
         const csvRows = filteredTransactions.map(t => {
             const formattedDate = format(new Date(t.date), "yyyy-MM-dd");
-            const escapeCsvCell = (cell) => `"${String(cell).replace(/"/g, '""')}"`;
+            const escapeCsvCell = (cell: string | number | Date | null | undefined) => `"${String(cell).replace(/"/g, '""')}"`;
+
             return [escapeCsvCell(t.name), escapeCsvCell(t.email), escapeCsvCell(t.amount), escapeCsvCell(t.type), escapeCsvCell(formattedDate)].join(',');
         });
         const csvString = [headers.join(','), ...csvRows].join('\n');

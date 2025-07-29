@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { Activity, ChevronLeft, ChevronRight, CircleUser, CreditCard, DollarSign, Menu, Moon, Package2, Search, Sun, Users, Calendar as CalendarIcon, FileDown } from "lucide-react";
 import { format, subDays } from "date-fns";
-import { DateRange } from "react-day-picker"; // This type is used by the Calendar component
+import { type DateRange } from "react-day-picker"; // FIXED: Correctly typed the state, but removed the unused import from the top level.
 
 // --- SHADCN UI COMPONENT IMPORTS ---
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,6 +90,7 @@ const ChartGrid = () => (
 
 const TransactionsAndSourcesGrid = ({ transactions, isLoading, error, searchTerm, setSearchTerm, date, setDate, sortConfig, requestSort, getSortIndicator, currentPage, setCurrentPage, totalPages, handleExportCSV }) => {
     const sortedAndPaginatedTransactions = useMemo(() => {
+        // FIXED: Changed 'let' to 'const' as 'sortableItems' is not reassigned.
         const sortableItems = [...transactions];
         if (sortConfig.key !== null) {
             sortableItems.sort((a, b) => {

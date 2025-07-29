@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { Activity, ChevronLeft, ChevronRight, CircleUser, CreditCard, DollarSign, Menu, Moon, Package2, Search, Sun, Users, Calendar as CalendarIcon, FileDown } from "lucide-react";
 import { format, subDays } from "date-fns";
+import { DateRange } from "react-day-picker"; // This type is used by the Calendar component
 
 // --- SHADCN UI COMPONENT IMPORTS ---
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +90,7 @@ const ChartGrid = () => (
 
 const TransactionsAndSourcesGrid = ({ transactions, isLoading, error, searchTerm, setSearchTerm, date, setDate, sortConfig, requestSort, getSortIndicator, currentPage, setCurrentPage, totalPages, handleExportCSV }) => {
     const sortedAndPaginatedTransactions = useMemo(() => {
-        let sortableItems = [...transactions];
+        const sortableItems = [...transactions];
         if (sortConfig.key !== null) {
             sortableItems.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -158,7 +159,7 @@ const Dashboard = () => {
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
     const [currentPage, setCurrentPage] = useState(1);
     
-    const [date, setDate] = useState({ from: subDays(new Date(), 29), to: new Date() });
+    const [date, setDate] = useState<DateRange | undefined>({ from: subDays(new Date(), 29), to: new Date() });
 
     useEffect(() => {
         const fetchTransactions = async () => {

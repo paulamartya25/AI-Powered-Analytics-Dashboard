@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { Activity, ChevronLeft, ChevronRight, CircleUser, CreditCard, DollarSign, Menu, Moon, Package2, Search, Sun, Users, Calendar as CalendarIcon, FileDown } from "lucide-react";
 import { format, subDays } from "date-fns";
-import { type DateRange } from "react-day-picker"; // FIXED: Correctly typed the state, but removed the unused import from the top level.
+import { type DateRange } from "react-day-picker";
 
 // --- SHADCN UI COMPONENT IMPORTS ---
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +42,7 @@ const cardAnimation = {
     visible: { opacity: 1, y: 0 },
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string | number }) => {
     if (active && payload && payload.length) {
         return (
             <div className="p-2 bg-background border border-muted rounded-lg shadow-lg">
@@ -90,7 +90,6 @@ const ChartGrid = () => (
 
 const TransactionsAndSourcesGrid = ({ transactions, isLoading, error, searchTerm, setSearchTerm, date, setDate, sortConfig, requestSort, getSortIndicator, currentPage, setCurrentPage, totalPages, handleExportCSV }) => {
     const sortedAndPaginatedTransactions = useMemo(() => {
-        // FIXED: Changed 'let' to 'const' as 'sortableItems' is not reassigned.
         const sortableItems = [...transactions];
         if (sortConfig.key !== null) {
             sortableItems.sort((a, b) => {

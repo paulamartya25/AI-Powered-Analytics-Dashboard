@@ -8,7 +8,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { ThemeProvider, useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
-import { Activity, ChevronLeft, ChevronRight, CircleUser, CreditCard, DollarSign, Menu, Moon, Package2, Search, Sun, Users, Calendar as CalendarIcon, FileDown } from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight, CircleUser, CreditCard, DollarSign, Menu, Moon, Package2, Search, Sun, Users, Calendar as CalendarIcon, FileDown, LucideProps } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { type DateRange } from "react-day-picker";
 
@@ -35,6 +35,31 @@ const revenueData = [ { name: "Jan", total: 4000 }, { name: "Feb", total: 3000 }
 const conversionData = [ { name: 'Week 1', conversions: 400 }, { name: 'Week 2', conversions: 300 }, { name: 'Week 3', conversions: 500 }, { name: 'Week 4', conversions: 450 }, { name: 'Week 5', conversions: 600 }, { name: 'Week 6', conversions: 550 }, { name: 'Week 7', conversions: 700 }, ];
 const trafficSourceData = [ { name: 'Organic Search', value: 400, fill: '#8884d8' }, { name: 'Direct', value: 300, fill: '#82ca9d' }, { name: 'Referral', value: 300, fill: '#ffc658' }, { name: 'Social Media', value: 200, fill: '#ff8042' }, ];
 
+// --- TYPESCRIPT INTERFACES ---
+// FIXED: Added specific types to avoid the 'no-explicit-any' error.
+interface Metric {
+  title: string;
+  value: string;
+  change: string;
+  icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
+}
+interface ChartTooltipPayload {
+    name: string;
+    value: number | string;
+}
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: ChartTooltipPayload[];
+    label?: string | number;
+}
+interface Transaction {
+    name: string;
+    email: string;
+    amount: string;
+    type: string;
+    date: Date;
+}
+
 // --- REFACTORED COMPONENTS ---
 
 const cardAnimation = {
@@ -42,7 +67,7 @@ const cardAnimation = {
     visible: { opacity: 1, y: 0 },
 };
 
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string | number }) => {
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="p-2 bg-background border border-muted rounded-lg shadow-lg">
@@ -54,7 +79,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
     return null;
 };
 
-const MetricCard = ({ title, value, change, Icon }) => (
+const MetricCard = ({ title, value, change, Icon }: { title: string; value: string; change: string; Icon: Metric['icon'] }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -67,7 +92,7 @@ const MetricCard = ({ title, value, change, Icon }) => (
   </Card>
 );
 
-const MetricCardsGrid = ({ metrics }) => (
+const MetricCardsGrid = ({ metrics }: { metrics: Metric[] }) => (
     <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         {metrics.map((metric, index) => (
             <motion.div key={index} variants={cardAnimation} initial="hidden" animate="visible" transition={{ duration: 0.5, delay: index * 0.1 }}>
@@ -150,13 +175,13 @@ const TransactionsAndSourcesGrid = ({ transactions, isLoading, error, searchTerm
 const Dashboard = () => {
     const { setTheme } = useTheme();
     
-    const [keyMetrics, setKeyMetrics] = useState(initialKeyMetrics);
-    const [transactions, setTransactions] = useState([]);
+    const [keyMetrics, setKeyMetrics] = useState<Metric[]>(initialKeyMetrics);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
+    const [sortConfig, setSortConfig] = useState<{ key: keyof Transaction; direction: 'ascending' | 'descending' }>({ key: 'name', direction: 'ascending' });
     const [currentPage, setCurrentPage] = useState(1);
     
     const [date, setDate] = useState<DateRange | undefined>({ from: subDays(new Date(), 29), to: new Date() });
@@ -168,9 +193,9 @@ const Dashboard = () => {
                 const response = await fetch('https://jsonplaceholder.typicode.com/users');
                 if (!response.ok) throw new Error('Data could not be fetched!');
                 const data = await response.json();
-                const formattedData = data.map((user, index) => ({ name: user.name, email: user.email, amount: `$${(Math.random() * 500 + 50).toFixed(2)}`, type: Math.random() > 0.5 ? 'Sale' : 'Subscription', date: subDays(new Date(), index * 3) }));
+                const formattedData: Transaction[] = data.map((user, index) => ({ name: user.name, email: user.email, amount: `$${(Math.random() * 500 + 50).toFixed(2)}`, type: Math.random() > 0.5 ? 'Sale' : 'Subscription', date: subDays(new Date(), index * 3) }));
                 setTransactions(formattedData);
-            } catch (err) { setError(err.message); } finally { setIsLoading(false); }
+            } catch (err: unknown) { if (err instanceof Error) setError(err.message); } finally { setIsLoading(false); }
         };
         fetchTransactions();
     }, []);
@@ -190,20 +215,20 @@ const Dashboard = () => {
 
     const totalPages = Math.ceil(filteredTransactions.length / 5);
 
-    const requestSort = (key) => {
-        let direction = 'ascending';
+    const requestSort = (key: keyof Transaction) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
         if (sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
         setSortConfig({ key, direction });
     };
 
-    const getSortIndicator = (key) => {
+    const getSortIndicator = (key: keyof Transaction) => {
         if (sortConfig.key === key) return sortConfig.direction === 'ascending' ? ' ▲' : ' ▼';
         return '';
     };
 
     const handleExportCSV = () => {
         if (filteredTransactions.length === 0) {
-            console.error("No Data to Export: Please select a different date range or clear filters.");
+            console.error("No Data to Export");
             return;
         }
         const headers = ["Name", "Email", "Amount", "Type", "Date"];
@@ -220,7 +245,7 @@ const Dashboard = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        console.log("Export Successful: Your transactions have been downloaded as a CSV file.");
+        console.log("Export Successful");
     };
 
   return (

@@ -218,19 +218,37 @@ const Dashboard = () => {
     
     const [date, setDate] = useState<DateRange | undefined>({ from: subDays(new Date(), 29), to: new Date() });
 
-    useEffect(() => {
-        const fetchTransactions = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/users');
-                if (!response.ok) throw new Error('Data could not be fetched!');
-                const data = await response.json();
-                const formattedData: Transaction[] = data.map((user: any, index: number) => ({ name: user.name, email: user.email, amount: `$${(Math.random() * 500 + 50).toFixed(2)}`, type: Math.random() > 0.5 ? 'Sale' : 'Subscription', date: subDays(new Date(), index * 3) }));
-                setTransactions(formattedData);
-            } catch (err: unknown) { if (err instanceof Error) setError(err.message); } finally { setIsLoading(false); }
-        };
-        fetchTransactions();
-    }, []);
+    type APIUser = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+useEffect(() => {
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/users');
+      if (!response.ok) throw new Error('Data could not be fetched!');
+      const data: APIUser[] = await response.json();
+      const formattedData: Transaction[] = data.map((user: APIUser, index: number) => ({
+        name: user.name,
+        email: user.email,
+        amount: `$${(Math.random() * 500 + 50).toFixed(2)}`,
+        type: Math.random() > 0.5 ? 'Sale' : 'Subscription',
+        date: subDays(new Date(), index * 3)
+      }));
+      setTransactions(formattedData);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  fetchTransactions();
+}, []);
+
 
     useEffect(() => {
         const interval = setInterval(() => {

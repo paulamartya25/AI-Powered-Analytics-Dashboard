@@ -2,7 +2,7 @@
 
 This is a modern, visually stunning analytics dashboard built for the "AI Vibe Coder" hiring task at ADmyBRAND. It was developed using Next.js, shadcn/ui, and Tailwind CSS, with significant assistance from an AI programming partner.
 
-**Live Demo:** [Link to your Vercel deployment will go here after Step 3]
+**Live Demo:** [https://ai-powered-analytics-dashboard-nf9u.vercel.app/]
 
 ---
 
